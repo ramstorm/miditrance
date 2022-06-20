@@ -18,6 +18,8 @@ keyboard = Controller()
 modifier = False
 enable_keymap = True
 key_reference = next(iter(config.keymap))
+midi_in = None
+midi_out = None
 
 class MidiInputHandler(object):
     def __init__(self, port):
@@ -28,15 +30,15 @@ class MidiInputHandler(object):
         global modifier
         global enable_keymap
         global key_reference
+        global midi_out
         message, deltatime = event
         self._wallclock += deltatime
-        print("[%s] @%0.6f %r" % (self.port, self._wallclock, message))
         messagetype = message[0] >> 4
         channel = (message[0] & 15) + 1
         note = message[1] if len(message) > 1 else None
         midinote = note
         velocity = message[2] if len(message) > 2 else None
-        print('MIDI messagetype: ' + str(messagetype) + ' note: '  + str(note) + ' channel: ' + str(channel))
+
         if enable_keymap and messagetype == 9 and note in config.keymap: # Note on
             keyboard.press(config.keymap[note])
         elif enable_keymap and messagetype == 8 and note in config.keymap: # Note off
@@ -53,6 +55,8 @@ class MidiInputHandler(object):
                 modifier = False
             else:
                 modifier = True
+        else:
+            midi_out.send_message(message)
 
 
 #########################################
@@ -60,21 +64,22 @@ class MidiInputHandler(object):
 # MAIN LOOP
 #########################################
 
-midi_in = None
-midi_out = None
 for port in rtmidi.MidiIn().get_ports():
     if config.midi['in_device'] in port:
         midi_in, port_name = open_midiinput(port)
         midi_in.set_callback(MidiInputHandler(port_name))
         print('Opened MIDI input: ' + port_name)
         break
-if midi_in is None:
-    print("MIDI input not found.")
+for port in rtmidi.MidiOut().get_ports():
+    if config.midi['out_device'] in port:
+        midi_out, port_name = open_midioutput(port)
+        print('Opened MIDI output: ' + port_name)
+        break
+if midi_in is None or midi_out is None:
+    print("MIDI device not found.")
     exit()
 
 try:
-    # Just wait for keyboard interrupt,
-    # everything else is handled via the input callback.
     while True:
         time.sleep(1)
 except KeyboardInterrupt:
