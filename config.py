@@ -2,7 +2,7 @@ from pynput.keyboard import Key, Controller
 
 midi = dict(
         in_device = 'iRig Keys',
-        out_device = 'Midi Through',
+        out_device = 'M8',
 )
 keymap = {
         48:'z',

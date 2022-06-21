@@ -5,7 +5,7 @@
 
 import time
 import rtmidi
-from rtmidi.midiutil import open_midiinput
+from rtmidi.midiutil import open_midiinput, open_midioutput
 from pynput.keyboard import Key, Controller
 import config
 
@@ -64,16 +64,16 @@ class MidiInputHandler(object):
 # MAIN LOOP
 #########################################
 
+for port in rtmidi.MidiOut().get_ports():
+    if config.midi['out_device'] in port:
+        midi_out, port_name = open_midioutput(port)
+        print('Opened MIDI output: ' + port_name)
+        break
 for port in rtmidi.MidiIn().get_ports():
     if config.midi['in_device'] in port:
         midi_in, port_name = open_midiinput(port)
         midi_in.set_callback(MidiInputHandler(port_name))
         print('Opened MIDI input: ' + port_name)
-        break
-for port in rtmidi.MidiOut().get_ports():
-    if config.midi['out_device'] in port:
-        midi_out, port_name = open_midioutput(port)
-        print('Opened MIDI output: ' + port_name)
         break
 if midi_in is None or midi_out is None:
     print("MIDI device not found.")
