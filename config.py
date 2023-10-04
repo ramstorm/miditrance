@@ -6,13 +6,13 @@ midi = dict(
 )
 keymap = {
         45:Key.left,
-        47:'z',
+        47:'a',
         48:Key.down,
         50:Key.up,
         52:Key.right,
-        53:'a',
-        55:'x',
-        56:'s',
+        53:'z',
+        55:'s',
+        56:'x',
 }
 mod_key_1 = 57
 mod_key_2 = 59

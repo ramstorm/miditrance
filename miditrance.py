@@ -44,6 +44,7 @@ class MidiInputHandler(object):
         note = message[1] if len(message) > 1 else None
         velocity = message[2] if len(message) > 2 else None
 
+        #print('midi type:' + str(messagetype) + ' channel:' + str(channel) + ' note:' + str(note))
         if enable_keymap and messagetype == 9 and note in config.keymap: # Note on
             keyboard.press(config.keymap[note])
         elif enable_keymap and messagetype == 8 and note in config.keymap: # Note off
@@ -59,7 +60,8 @@ class MidiInputHandler(object):
                 elif mod_1_pressed and mod_2_pressed and note == config.mod_oct_dn:
                     transpose -= 12 if transpose > config.transpose_min else 0
                 elif mod_1_pressed and mod_2_pressed and note == config.mod_start:
-                    keyboard.press('x')
+                    keyboard.press('s')
+                    keyboard.release('s')
                 elif mod_1_pressed and mod_2_pressed and note == config.mod_toggle:
                     enable_keymap = not enable_keymap
             elif messagetype == 8: # Note off
