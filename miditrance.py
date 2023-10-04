@@ -16,10 +16,13 @@ import config
 
 keyboard = Controller()
 modifier = False
-enable_keymap = True
+enable_keymap = False
 key_reference = next(iter(config.keymap))
 midi_in = None
 midi_out = None
+mod_1_pressed = False
+mod_2_pressed = False
+transpose = 0
 
 class MidiInputHandler(object):
     def __init__(self, port):
@@ -31,31 +34,41 @@ class MidiInputHandler(object):
         global enable_keymap
         global key_reference
         global midi_out
+        global mod_1_pressed
+        global mod_2_pressed
+        global transpose
         message, deltatime = event
         self._wallclock += deltatime
         messagetype = message[0] >> 4
         channel = (message[0] & 15) + 1
         note = message[1] if len(message) > 1 else None
-        midinote = note
         velocity = message[2] if len(message) > 2 else None
 
         if enable_keymap and messagetype == 9 and note in config.keymap: # Note on
             keyboard.press(config.keymap[note])
         elif enable_keymap and messagetype == 8 and note in config.keymap: # Note off
             keyboard.release(config.keymap[note])
-        elif modifier and messagetype == 9: # Note on with modifier
-            transpose = note - key_reference
-            config.keymap = { k + transpose: v for k, v in config.keymap.items() }
-            key_reference = note
-            enable_keymap = True
-            modifier = False
-        elif messagetype == 12: # Program change - set modifier and toggle keymap
-            if modifier:
-                enable_keymap = not enable_keymap
-                modifier = False
-            else:
-                modifier = True
         else:
+            if messagetype == 9: # Note on
+                if note == config.mod_key_1:
+                    mod_1_pressed = True
+                elif note == config.mod_key_2:
+                    mod_2_pressed = True
+                elif mod_1_pressed and mod_2_pressed and note == config.mod_oct_up:
+                    transpose += 12 if transpose < config.transpose_max else 0
+                elif mod_1_pressed and mod_2_pressed and note == config.mod_oct_dn:
+                    transpose -= 12 if transpose > config.transpose_min else 0
+                elif mod_1_pressed and mod_2_pressed and note == config.mod_start:
+                    keyboard.press('x')
+                elif mod_1_pressed and mod_2_pressed and note == config.mod_toggle:
+                    enable_keymap = not enable_keymap
+            elif messagetype == 8: # Note off
+                if note == config.mod_key_1:
+                    mod_1_pressed = False
+                elif note == config.mod_key_2:
+                    mod_2_pressed = False
+            if note is not None:
+                message[1] = note + transpose
             midi_out.send_message(message)
 
 
