@@ -57,8 +57,10 @@ class MidiInputHandler(object):
                     mod_2_pressed = True
                 elif mod_1_pressed and mod_2_pressed and note == config.mod_oct_up:
                     transpose += 12 if transpose < config.transpose_max else 0
+                    return
                 elif mod_1_pressed and mod_2_pressed and note == config.mod_oct_dn:
                     transpose -= 12 if transpose > config.transpose_min else 0
+                    return
                 elif mod_1_pressed and mod_2_pressed and note == config.mod_start:
                     keyboard.press('s')
                     keyboard.release('s')
