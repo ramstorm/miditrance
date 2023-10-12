@@ -56,9 +56,15 @@ class MidiInputHandler(object):
                 elif note == config.mod_key_2:
                     mod_2_pressed = True
                 elif mod_1_pressed and mod_2_pressed and note == config.mod_oct_up:
+                    # Mod keys note off
+                    midi_out.send_message([128, config.mod_key_1 + transpose, 0])
+                    midi_out.send_message([128, config.mod_key_2 + transpose, 0])
                     transpose += 12 if transpose < config.transpose_max else 0
                     return
                 elif mod_1_pressed and mod_2_pressed and note == config.mod_oct_dn:
+                    # Mod keys note off
+                    midi_out.send_message([128, config.mod_key_1 + transpose, 0])
+                    midi_out.send_message([128, config.mod_key_2 + transpose, 0])
                     transpose -= 12 if transpose > config.transpose_min else 0
                     return
                 elif mod_1_pressed and mod_2_pressed and note == config.mod_start:
