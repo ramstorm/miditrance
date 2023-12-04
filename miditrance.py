@@ -72,12 +72,12 @@ class MidiInputHandler(object):
                     keyboard.release('s')
                 elif mod_1_pressed and mod_2_pressed and note == config.mod_toggle:
                     enable_keymap = not enable_keymap
+                message[1] = note + transpose
             elif messagetype == 8: # Note off
                 if note == config.mod_key_1:
                     mod_1_pressed = False
                 elif note == config.mod_key_2:
                     mod_2_pressed = False
-            if note is not None:
                 message[1] = note + transpose
             midi_out.send_message(message)
 
